@@ -6,4 +6,5 @@ gem 'guard'
 gem 'guard-rspec', require: false
 gem 'rspec'
 gem 'rubocop'
+gem 'rubrowser'
 gem 'zeitwerk'
