@@ -40,6 +40,65 @@ describe 'user securites dealing' do
         expect(view.content).to eq('Mark, your portfolio is worth 4500.00 USD')
       end
     end
+
+    context 'when user moves countries' do
+      let(:date_of_move) { today + 7.days }
+
+      before do
+        view.show_profile
+        view_driver.change_address_to(street: '123 Main St', zip: '90210', city: 'Beverly Hills', country: 'US',
+                                      valid_from: date_of_move)
+      end
+
+      context 'when user has not moved yet' do
+        before { Timecop.travel(date_of_move - 1.day) }
+
+        it 'shows currency at old address in portfolio' do
+          view.show_portfolio
+
+          expect(view.content).to eq('Mark, your portfolio is worth 4005.00 EUR')
+        end
+      end
+
+      context 'when user has already moved' do
+        before { Timecop.travel(date_of_move) }
+
+        it 'shows currency at new address in portfolio' do
+          view.show_portfolio
+
+          expect(view.content).to eq('Mark, your portfolio is worth 4500.00 USD')
+        end
+      end
+    end
+
+    context 'when user has changed name' do
+      let(:date_of_change) { today + 7.days }
+
+      before do
+        view.show_profile
+        view_driver.change_name_to(name: 'Mark William', valid_from: date_of_change)
+      end
+
+      context 'when user has not change name yet' do
+        before { Timecop.travel(date_of_change - 1.day) }
+
+        it 'shows old name in portfolio' do
+          view.show_portfolio
+
+          expect(view.content).to eq('Mark, your portfolio is worth 4005.00 EUR')
+        end
+      end
+
+      context 'when user already changed name' do
+        before { Timecop.travel(date_of_change) }
+
+        it 'shows new name in portfolio' do
+          view.show_portfolio
+
+          expect(view.content).to eq('Mark William, your portfolio is worth 4005.00 EUR')
+        end
+      end
+    end
   end
 
   context 'when user looks at investment news' do
@@ -62,6 +121,65 @@ describe 'user securites dealing' do
       it 'shows news', :aggregate_failures do
         expect(view.title).to eq("Mark's news")
         expect(view.content).to eq('Exchange Rate USD/CHF: 0.97')
+      end
+    end
+
+    context 'when user moves countries' do
+      let(:date_of_move) { today + 7.days }
+
+      before do
+        view.show_profile
+        view_driver.change_address_to(street: '123 Main St', zip: '90210', city: 'Beverly Hills', country: 'US',
+                                      valid_from: date_of_move)
+      end
+
+      context 'when user has not moved yet' do
+        before { Timecop.travel(date_of_move - 1.day) }
+
+        it 'shows exchange rate at old address' do
+          view.show_investment_news
+
+          expect(view.content).to eq('Exchange Rate USD/EUR: 0.89')
+        end
+      end
+
+      context 'when user has already moved' do
+        before { Timecop.travel(date_of_move) }
+
+        it 'shows exchange rate at new address' do
+          view.show_investment_news
+
+          expect(view.content).to eq('Exchange Rate USD/USD: 1')
+        end
+      end
+    end
+
+    context 'when user has changed name' do
+      let(:date_of_change) { today + 7.days }
+
+      before do
+        view.show_profile
+        view_driver.change_name_to(name: 'Mark William', valid_from: date_of_change)
+      end
+
+      context 'when user has not change name yet' do
+        before { Timecop.travel(date_of_change - 1.day) }
+
+        it 'shows old name' do
+          view.show_investment_news
+
+          expect(view.title).to eq("Mark's news")
+        end
+      end
+
+      context 'when user already changed name' do
+        before { Timecop.travel(date_of_change) }
+
+        it 'shows new name' do
+          view.show_investment_news
+
+          expect(view.title).to eq("Mark William's news")
+        end
       end
     end
   end
@@ -98,6 +216,65 @@ describe 'user securites dealing' do
 
           expect(view.title).to eq("Mark's fees (in EUR)")
           expect(view.content).to eq('Fees: 40.05 EUR')
+        end
+      end
+
+      context 'when user moves countries' do
+        let(:date_of_move) { today + 7.days }
+
+        before do
+          view.show_profile
+          view_driver.change_address_to(street: '123 Main St', zip: '90210', city: 'Beverly Hills', country: 'US',
+                                        valid_from: date_of_move)
+        end
+
+        context 'when user has not moved yet' do
+          before { Timecop.travel(date_of_move - 1.day) }
+
+          it 'shows exchange rate at old address' do
+            view.show_investment_fees
+
+            expect(view.content).to eq('Fees: 40.05 EUR')
+          end
+        end
+
+        context 'when user has already moved' do
+          before { Timecop.travel(date_of_move) }
+
+          it 'shows exchange rate at new address' do
+            view.show_investment_fees
+
+            expect(view.content).to eq('Fees: 45.00 USD')
+          end
+        end
+      end
+
+      context 'when user has changed name' do
+        let(:date_of_change) { today + 7.days }
+
+        before do
+          view.show_profile
+          view_driver.change_name_to(name: 'Mark William', valid_from: date_of_change)
+        end
+
+        context 'when user has not change name yet' do
+          before { Timecop.travel(date_of_change - 1.day) }
+
+          it 'shows old name' do
+            view.show_investment_fees
+
+            expect(view.title).to eq("Mark's fees (in EUR)")
+          end
+        end
+
+        context 'when user already changed name' do
+          before { Timecop.travel(date_of_change) }
+
+          it 'shows new name' do
+            view.show_investment_fees
+
+            expect(view.title).to eq("Mark William's fees (in EUR)")
+          end
         end
       end
     end

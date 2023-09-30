@@ -104,7 +104,11 @@ describe 'user administration' do
 
           it 'shows admin dashboard', :aggregate_failures do
             expect(view.title).to eq('Administrator dashboard')
-            expect(view.content).to eq('mark@liamtoh.com, Mark, Baumweg 13, 3001 Bern, CH')
+            expected_content = <<~USERS
+              mark@liamtoh.com:
+                Mark, Baumweg 13, 3001 Bern, CH
+            USERS
+            expect(view.content).to eq(expected_content.strip)
           end
         end
       end
@@ -149,8 +153,10 @@ describe 'user administration' do
         expect(view.title).to eq('Administrator dashboard')
 
         expected_content = <<~USERS
-          jeremy@liamtoh.com, Jeremy, Obere Matte 2, 70173 Stuttgart, DE
-          susanne@liamtoh.com, Susanne, Alpweg 332, 8000 Zürich, CH
+          jeremy@liamtoh.com:
+            Jeremy, Obere Matte 2, 70173 Stuttgart, DE
+          susanne@liamtoh.com:
+            Susanne, Alpweg 332, 8000 Zürich, CH
         USERS
         expect(view.content).to eq(expected_content.strip)
       end
@@ -214,21 +220,47 @@ describe 'user administration' do
     end
 
     context 'when user changes name' do
+      let(:valid_from) { today + 1.month }
+
       before do
         view_driver.show_profile
-        view_driver.change_name_to(name: 'Johnny',
-                                   valid_from: today + 1.year)
+        view_driver.change_name_to(name: 'Johnny', valid_from:)
+        view_driver.logout
+        view_driver.login(email: 'john@liamtoh.com')
       end
 
-      it 'updates profile', :aggregate_failures do
-        expect(view.title).to eq("Johnny's profile")
-        expected_profile = <<~PROFILE
-          Name: Johnny
-          EMail: john@liamtoh.com
-          Address: 12 Bow Lane, BD12 4LL Bradford
-          Country: UK
-        PROFILE
-        expect(view.content).to eq(expected_profile)
+      context 'when changed name is not valid yet' do
+        before { Timecop.travel(valid_from - 1.day) }
+
+        it 'shows old name in the profile', :aggregate_failures do
+          view_driver.show_profile
+
+          expect(view.title).to eq("John's profile")
+          expected_profile = <<~PROFILE
+            Name: John
+            EMail: john@liamtoh.com
+            Address: 12 Bow Lane, BD12 4LL Bradford
+            Country: UK
+          PROFILE
+          expect(view.content).to eq(expected_profile)
+        end
+      end
+
+      context 'when changed name is already valid' do
+        before { Timecop.travel(valid_from) }
+
+        it 'shows changed name in the profile', :aggregate_failures do
+          view_driver.show_profile
+
+          expect(view.title).to eq("Johnny's profile")
+          expected_profile = <<~PROFILE
+            Name: Johnny
+            EMail: john@liamtoh.com
+            Address: 12 Bow Lane, BD12 4LL Bradford
+            Country: UK
+          PROFILE
+          expect(view.content).to eq(expected_profile)
+        end
       end
 
       context 'when admin user logs in' do
@@ -239,30 +271,62 @@ describe 'user administration' do
 
         it 'shows admin dashboard with updated user info', :aggregate_failures do
           expect(view.title).to eq('Administrator dashboard')
-          expect(view.content).to eq('john@liamtoh.com, Johnny, 12 Bow Lane, BD12 4LL Bradford, UK')
+          expected_content = <<~USERS
+            john@liamtoh.com:
+              John, 12 Bow Lane, BD12 4LL Bradford, UK
+              Johnny, 12 Bow Lane, BD12 4LL Bradford, UK
+          USERS
+          expect(view.content).to eq(expected_content.strip)
         end
       end
     end
 
     context 'when user changes address' do
+      let(:valid_from) { today + 1.year }
+
       before do
         view_driver.show_profile
         view_driver.change_address_to(street: '113c Upper Street',
                                       zip: 'NX1 1LY',
                                       city: 'Norwich',
                                       country: 'UK',
-                                      valid_from: today + 2.month)
+                                      valid_from:)
+        view_driver.logout
+        view_driver.login(email: 'john@liamtoh.com')
       end
 
-      it 'updates profile', :aggregate_failures do
-        expect(view.title).to eq("John's profile")
-        expected_profile = <<~PROFILE
-          Name: John
-          EMail: john@liamtoh.com
-          Address: 113c Upper Street, NX1 1LY Norwich
-          Country: UK
-        PROFILE
-        expect(view.content).to eq(expected_profile)
+      context 'when changed address is not valid yet' do
+        before { Timecop.travel(valid_from - 1.day) }
+
+        it 'shows old address in the profile', :aggregate_failures do
+          view_driver.show_profile
+
+          expect(view.title).to eq("John's profile")
+          expected_profile = <<~PROFILE
+            Name: John
+            EMail: john@liamtoh.com
+            Address: 12 Bow Lane, BD12 4LL Bradford
+            Country: UK
+          PROFILE
+          expect(view.content).to eq(expected_profile)
+        end
+      end
+
+      context 'when changed address is already valid' do
+        before { Timecop.travel(valid_from) }
+
+        it 'shows old address in the profile', :aggregate_failures do
+          view_driver.show_profile
+
+          expect(view.title).to eq("John's profile")
+          expected_profile = <<~PROFILE
+            Name: John
+            EMail: john@liamtoh.com
+            Address: 113c Upper Street, NX1 1LY Norwich
+            Country: UK
+          PROFILE
+          expect(view.content).to eq(expected_profile)
+        end
       end
 
       context 'when admin user logs in' do
@@ -273,7 +337,68 @@ describe 'user administration' do
 
         it 'shows admin dashboard with updated user info', :aggregate_failures do
           expect(view.title).to eq('Administrator dashboard')
-          expect(view.content).to eq('john@liamtoh.com, John, 113c Upper Street, NX1 1LY Norwich, UK')
+          expected_content = <<~USERS
+            john@liamtoh.com:
+              John, 12 Bow Lane, BD12 4LL Bradford, UK
+              John, 113c Upper Street, NX1 1LY Norwich, UK
+          USERS
+          expect(view.content).to eq(expected_content.strip)
+        end
+      end
+    end
+
+    context 'when user changes address and name several times' do
+      before do
+        view_driver.show_profile
+        view_driver.change_address_to(street: '113c Upper Street', zip: 'NX1 1LY', city: 'Norwich', country: 'UK',
+                                      valid_from: today + 1.year)
+        view_driver.change_address_to(street: '113c Upper Road', zip: 'NX1 1LY', city: 'Norwich', country: 'UK',
+                                      valid_from: today + 2.years)
+        view_driver.change_name_to(name: 'Johnny', valid_from: today + 3.years)
+        view_driver.change_address_to(street: '12 Llyelyn Road', zip: 'CF10 2GP', city: 'Cardiff', country: 'UK',
+                                      valid_from: today + 4.years)
+        view_driver.change_name_to(name: 'John', valid_from: today + 5.years)
+      end
+
+      context 'when some changes are already valid' do
+        before do
+          Timecop.travel(today + 3.years)
+          view_driver.logout
+          view_driver.login(email: 'john@liamtoh.com')
+        end
+
+        it 'shows changes in the profile', :aggregate_failures do
+          view_driver.show_profile
+
+          expect(view.title).to eq("Johnny's profile")
+          expected_profile = <<~PROFILE
+            Name: Johnny
+            EMail: john@liamtoh.com
+            Address: 113c Upper Road, NX1 1LY Norwich
+            Country: UK
+          PROFILE
+          expect(view.content).to eq(expected_profile)
+        end
+      end
+
+      context 'when admin user logs in' do
+        before do
+          view_driver.logout
+          view_driver.login_admin
+        end
+
+        it 'shows admin dashboard with updated user info', :aggregate_failures do
+          expect(view.title).to eq('Administrator dashboard')
+          expected_content = <<~USERS
+            john@liamtoh.com:
+              John, 12 Bow Lane, BD12 4LL Bradford, UK
+              John, 113c Upper Street, NX1 1LY Norwich, UK
+              John, 113c Upper Road, NX1 1LY Norwich, UK
+              Johnny, 113c Upper Road, NX1 1LY Norwich, UK
+              Johnny, 12 Llyelyn Road, CF10 2GP Cardiff, UK
+              John, 12 Llyelyn Road, CF10 2GP Cardiff, UK
+          USERS
+          expect(view.content).to eq(expected_content.strip)
         end
       end
     end
