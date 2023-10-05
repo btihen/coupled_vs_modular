@@ -7,13 +7,11 @@ require 'active_record'
 require 'controller'
 require 'view'
 
-loader = Zeitwerk::Loader.for_gem
+loader = Zeitwerk::Loader.for_gem(warn_on_extra_files: false)
+
+%w[controllers models views apis builders].each { loader.collapse("#{__dir__}/*/#{_1}") }
 
 loader.push_dir(__dir__)
-%w[views controllers models apis builders].each do |dir|
-  loader.push_dir("#{__dir__}/#{dir}")
-end
-
 loader.setup
 
 # This is the entry point for this messy application. Lionel didn't want it to be that way.
@@ -28,12 +26,12 @@ class Application
   private
 
   def show_login
-    controller = LoginController.new
+    controller = Admin::LoginController.new
     controller.show
   end
 
   def seed_data
-    User.create(email: 'admin@messy.com', password: '&£78fsasd', is_admin: true, person_id: nil)
+    Admin::Service.seed_data
   end
 
   class << self

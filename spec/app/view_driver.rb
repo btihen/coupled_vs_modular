@@ -23,7 +23,7 @@ class ViewDriver
 
   def current_view = @app.current_view
 
-  def signup(password: DEFAULT_PWD,
+  def signup(password: DEFAULT_PWD, # rubocop:disable Metrics/ParameterLists
              passcode: nil,
              street: 'Baumweg 13',
              country: 'CH',
@@ -31,25 +31,32 @@ class ViewDriver
              name: 'Mark',
              zip: '3001',
              city: 'Bern')
-    current_view.signup(email:, password:, passcode:, name:, street:, zip:, city:, country:)
+    login = Admin::LoginController::Login.new(email:, password:)
+    details = Admin::LoginController::Details.new(name:, street:, zip:, city:, country:)
+
+    current_view.signup(login:, details:, passcode:)
   end
 
   def login(email: 'mark@liamtoh.com', password: DEFAULT_PWD)
-    current_view.login(email:, password:)
+    login = Admin::LoginController::Login.new(email:, password:)
+
+    current_view.login(login:)
   end
 
   def signup_mark(password: DEFAULT_PWD, country: 'CH', street: 'Baumweg 13', passcode: nil)
-    current_view.signup(email: DEFAULT_EMAIL,
-                        password:,
-                        passcode:,
-                        name: 'Mark',
-                        street:,
-                        zip: '3001',
-                        city: 'Bern',
-                        country:)
+    login = Admin::LoginController::Login.new(email: DEFAULT_EMAIL, password:)
+    details = Admin::LoginController::Details.new(name: 'Mark', street:, zip: '3001', city: 'Bern', country:)
+
+    current_view.signup(login:, details:, passcode:)
   end
 
-  def login_mark(password: DEFAULT_PWD) = current_view.login(email: 'mark@liamtoh.com', password:)
+  def login_mark(password: DEFAULT_PWD)
+    login = Admin::LoginController::Login.new(email: 'mark@liamtoh.com', password:)
+    current_view.login(login:)
+  end
 
-  def login_admin = current_view.login(email: 'admin@messy.com', password: '&£78fsasd')
+  def login_admin
+    login = Admin::LoginController::Login.new(email: 'admin@messy.com', password: '&£78fsasd')
+    current_view.login(login:)
+  end
 end
