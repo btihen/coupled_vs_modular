@@ -10,12 +10,29 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.0].define(version: 2023_09_15_080533) do
+ActiveRecord::Schema[7.0].define(version: 2023_10_14_080533) do
+  create_table "address_versions", force: :cascade do |t|
+    t.integer "address_id", null: false
+    t.string "street"
+    t.string "city"
+    t.string "zip"
+    t.string "country"
+    t.date "valid_from", null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["address_id"], name: "index_address_versions_on_address_id"
+  end
+
   create_table "addresses", force: :cascade do |t|
-    t.string "street", null: false
-    t.string "city", null: false
-    t.string "zip", null: false
-    t.string "country", null: false
+  end
+
+  create_table "name_versions", force: :cascade do |t|
+    t.integer "person_id", null: false
+    t.string "name"
+    t.date "valid_from", null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["person_id"], name: "index_name_versions_on_person_id"
   end
 
   create_table "passcodes", force: :cascade do |t|
@@ -28,7 +45,6 @@ ActiveRecord::Schema[7.0].define(version: 2023_09_15_080533) do
   end
 
   create_table "people", force: :cascade do |t|
-    t.string "name", null: false
     t.integer "address_id", null: false
     t.index ["address_id"], name: "index_people_on_address_id"
   end
@@ -48,6 +64,8 @@ ActiveRecord::Schema[7.0].define(version: 2023_09_15_080533) do
     t.index ["person_id"], name: "index_users_on_person_id"
   end
 
+  add_foreign_key "address_versions", "addresses"
+  add_foreign_key "name_versions", "people"
   add_foreign_key "people", "addresses"
   add_foreign_key "securities", "users"
   add_foreign_key "users", "people"

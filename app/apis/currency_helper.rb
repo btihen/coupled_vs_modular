@@ -3,7 +3,7 @@
 class CurrencyHelper
   class << self
     def find_currency(user)
-      case user.person.address.country
+      case user.person.address.on(Date.today).country
       when 'CH'
         'CHF'
       when 'DE'

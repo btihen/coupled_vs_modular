@@ -7,9 +7,9 @@ class PortfolioView < View
   def content
     currency = CurrencyHelper.find_currency(@user)
     if @portfolio_value.positive?
-      "#{@user.person.name}, your portfolio is worth #{format('%.2f', @portfolio_value)} #{currency}"
+      "#{@user.person.name_on(Date.today)}, your portfolio is worth #{format('%.2f', @portfolio_value)} #{currency}"
     else
-      "#{@user.person.name}, your portfolio is worth nothing"
+      "#{@user.person.name_on(Date.today)}, your portfolio is worth nothing"
     end
   end
 

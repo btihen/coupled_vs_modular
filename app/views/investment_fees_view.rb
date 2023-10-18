@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 
 class InvestmentFeesView < View
-  def title = "#{@user.person.name}'s fees (in #{currency})"
+  def title = "#{@user.person.name_on(Date.today)}'s fees (in #{currency})"
 
   def content
     if @fees.positive?

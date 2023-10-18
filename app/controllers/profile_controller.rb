@@ -10,20 +10,19 @@ class ProfileController < ApplicationController
   def change_name_to(user_id:, name:, valid_from:)
     @user = User.find(user_id)
 
-    @user.person.name = name
-    @user.save
+    NameVersion.create(
+      person_id: @user.person.id, name:, valid_from:
+    )
 
     render(ProfileView)
   end
 
   def change_address_to(user_id:, street:, zip:, city:, country:, valid_from:)
     @user = User.find(user_id)
-
-    @user.person.address.street = street
-    @user.person.address.zip = zip
-    @user.person.address.city = city
-    @user.person.address.country = country
-    @user.save
+    AddressVersion.create(
+      address_id: @user.person.address.id,
+      street:, zip:, city:, country:, valid_from:
+    )
 
     render(ProfileView)
   end

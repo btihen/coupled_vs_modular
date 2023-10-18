@@ -16,9 +16,15 @@ class LoginController < ApplicationController
   end
 
   def signup(email:, password:, passcode:, name:, street:, zip:, city:, country:) # rubocop:disable Metrics/ParameterLists
-    address = Address.new(street:, city:, zip:, country:)
-    person = Person.new(name:, address:)
-    @user  = User.new(email:, password:, person:)
+    # address = Address.create
+    # address.address_versions.create(
+    #   street:, city:, zip:, country:, valid_from: Time.now
+    # )
+    # person = Person.create(address:)
+    # person.name_versions.create(name:, valid_from: Time.now)
+
+    # @user = User.new(email:, password:, person:)
+    @user = build_user(email:, password:, name:, street:, zip:, city:, country:) # rubocop:disable Metrics/LineLength
 
     if passcode.present?
       passcode = Passcode.find_by(name:, street:, zip:, city:, country:, passcode: passcode.to_i)
@@ -41,6 +47,17 @@ class LoginController < ApplicationController
   end
 
   private
+
+  def build_user(email:, password:, name:, street:, zip:, city:, country:) # rubocop:disable Metrics/ParameterLists
+    address = Address.create
+    address.address_versions.create(
+      street:, city:, zip:, country:, valid_from: Date.today
+    )
+    person = Person.create(address:)
+    person.name_versions.create(name:, valid_from: Date.today)
+
+    User.new(email:, password:, person:)
+  end
 
   def redirect(_user)
     if @user.admin?

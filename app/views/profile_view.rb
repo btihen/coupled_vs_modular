@@ -1,13 +1,13 @@
 # frozen_string_literal: true
 
 class ProfileView < View
-  def title = "#{@user.person.name}'s profile"
+  def title = "#{@user.person.name_on(Date.today)}'s profile"
 
   def content
     person = @user.person
-    address = person.address
+    address = person.address.on(Date.today)
     <<~PROFILE
-      Name: #{person.name}
+      Name: #{person.name_on(Date.today)}
       EMail: #{@user.email}
       Address: #{address.street}, #{address.zip} #{address.city}
       Country: #{address.country}

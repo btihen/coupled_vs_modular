@@ -6,7 +6,16 @@ class AdminView < View
 
   def content
     @users.select { _1.person.present? }.map do |user|
-      "#{user.email}, #{user.person.name}, #{user.person.address.street}, #{user.person.address.zip} #{user.person.address.city}, #{user.person.address.country}"
+      person = user.person
+      version_dates = person.version_dates
+      (
+        ["#{user.email}:"] +
+        version_dates.map do |date|
+          name = person.name_on(date)
+          address = person.address.on(date)
+          "  #{name}, #{address.street}, #{address.zip} #{address.city}, #{address.country}"
+        end
+      ).join("\n")
     end.join("\n")
   end
 
