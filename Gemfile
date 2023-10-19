@@ -17,3 +17,5 @@ gem 'sqlite3'
 gem 'standalone_migrations'
 gem 'timecop'
 gem 'zeitwerk'
+
+gem 'pry'
