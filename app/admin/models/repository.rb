@@ -35,9 +35,10 @@ module Admin
       def find_all_users = UserDataQuery.all.map { map_user_data(_1) }
 
       def find_user_and_country
-        User.joins(person: :address).pluck(:id, 'addresses.country').map do |user_id, country|
-          CountryData.new(user_id:, country:)
-        end
+        User.joins(person: { address: :address_versions })
+            .pluck(:id, 'address_versions.country').map do |user_id, country|
+              CountryData.new(user_id:, country:)
+            end
       end
 
       def passcode_exists?(details:, passcode:)
@@ -45,20 +46,26 @@ module Admin
         Passcode.exists?(name:, street:, zip:, city:, country:, passcode:)
       end
 
+      def user_versions(user_id)
+        user = User.find(user_id)
+        version_dates = user.version_dates
+        version_dates.map { |date| create_user_data(user, date) }
+      end
+
       private
 
       def map_user_data(user)
-        user.person.present? ? create_user_data(user) : create_default_user_data(user)
+        user.person.present? ? create_user_data(user, Date.today) : create_default_user_data(user)
       end
 
-      def create_user_data(user)
+      def create_user_data(user, date)
         person = user.person
-        address = user.person.address
+        address = user.person.address.on(date)
 
         UserData.new(id: user.id,
                      email: user.email,
                      admin?: user.admin?,
-                     name: person.name,
+                     name: person.name_on(date),
                      street: address.street,
                      zip: address.zip,
                      city: address.city,

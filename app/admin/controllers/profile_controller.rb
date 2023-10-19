@@ -12,17 +12,19 @@ module Admin
 
     def change_name_to(user_id:, name:, valid_from:)
       change_user(user_id) do |user|
-        user.person.name = name
+        NameVersion.create(
+          person_id: user.person.id, name:, valid_from:
+        )
       end
     end
 
     def change_address_to(user_id:, change:, valid_from:)
       change_user(user_id) do |user|
         change => { street:, zip:, city:, country: }
-        user.person.address.street = street
-        user.person.address.zip = zip
-        user.person.address.city = city
-        user.person.address.country = country
+        AddressVersion.create(
+          address_id: user.person.address.id,
+          street:, zip:, city:, country:, valid_from:
+        )
       end
     end
 

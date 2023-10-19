@@ -7,7 +7,13 @@ module Admin
 
     def content
       @users.select { _1.respond_to?(:name) }.map do |user|
-        "#{user.email}, #{user.name}, #{user.street}, #{user.zip} #{user.city}, #{user.country}"
+        user_versions = Repository.user_versions(user.id)
+        (
+          ["#{user.email}:"] +
+          user_versions.map do |uv|
+            "  #{uv.name}, #{uv.street}, #{uv.zip} #{uv.city}, #{uv.country}"
+          end
+        ).join("\n")
       end.join("\n")
     end
 

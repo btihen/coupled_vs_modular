@@ -44,9 +44,14 @@ module Admin
       login => {email:, password:}
       details => {name:, street:, city:, zip:, country:}
 
-      address = Address.new(street:, city:, zip:, country:)
-      person = Person.new(name:, address:)
-      User.new(email:, password:, person:)
+      address = Address.create
+      person = Person.create(address:)
+      AddressVersion.create(
+        address:, street:, city:, zip:, country:, valid_from: Time.now
+      )
+      NameVersion.create(person:, name:, valid_from: Time.now)
+
+      @user = User.new(email:, password:, person:)
     end
 
     def try_signup(user:, details:, passcode:)
