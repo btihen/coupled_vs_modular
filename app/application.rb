@@ -7,6 +7,8 @@ require 'active_record'
 require 'controller'
 require 'view'
 
+require 'pry'
+
 loader = Zeitwerk::Loader.for_gem(warn_on_extra_files: false)
 
 %w[controllers models views apis builders].each { loader.collapse("#{__dir__}/*/#{_1}") }
