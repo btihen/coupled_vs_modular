@@ -7,6 +7,8 @@ require 'active_record'
 require 'controller'
 require 'view'
 
+require 'pry'
+
 loader = Zeitwerk::Loader.for_gem
 
 loader.push_dir(__dir__)
